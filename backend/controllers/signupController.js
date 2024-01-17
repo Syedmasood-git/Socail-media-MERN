@@ -5,8 +5,8 @@ const { error, success } = require("../utils/responseWrapper");
 
 const signupController = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    if (!username || !password) {
+    const { username, password, name } = req.body;
+    if (!username || !password || !name) {
       return res.send(error(400,"All fields are required"))
     }
     const oldUser = await UserModel.findOne({ username });
@@ -15,7 +15,7 @@ const signupController = async (req, res) => {
     }
     const hashedpassword = await bcrypt.hash(password, 10);
 
-    const user = await UserModel.create({ username, password: hashedpassword });
+    const user = await UserModel.create({name, username, password: hashedpassword });
     return res.send(success(201,{user}))
   } catch (error) {
     res.json(error);
