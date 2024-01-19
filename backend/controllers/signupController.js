@@ -16,7 +16,7 @@ const signupController = async (req, res) => {
     const hashedpassword = await bcrypt.hash(password, 10);
 
     const user = await UserModel.create({name, username, password: hashedpassword });
-    return res.send(success(201,{user}))
+    return res.send(success(201,"User created successfully"))
   } catch (error) {
     res.json(error);
   }
@@ -26,7 +26,7 @@ const loginController = async (req, res) => {
   if (!username || !password) {
     return res.send(error(400,"All fields are required"))
   }
-  const User = await UserModel.findOne({ username });
+  const User = await UserModel.findOne({ username }).select('+password');
 
   if (!User) {
     return res.send(error(404,"User is not found"))
@@ -43,6 +43,19 @@ const loginController = async (req, res) => {
   })
   return res.send(success(201,{accessToken}))
 };
+
+const logoutController = async(req,res)=>{
+  try {
+    res.clearCookie('jwt',{
+      httpOnly:true,
+      secure:true
+    })
+    return res.send(success(200,"User Logged out successfull"))
+  } catch (err) {
+    return res.send(error(500,e.message))
+  }
+}
+
 //This api will check refresh access token validity and generate new access token
 const refreshAccessTokenController=async(req,res)=>{
   const cookies = req.cookies
@@ -54,8 +67,7 @@ const refreshAccessTokenController=async(req,res)=>{
     const decoded = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_KEY);
     
     const id =decoded.id
-    console.log("decoded>>>>",id);
-    // console.log('refresh Token>>>>>>',id);
+    
     const accessToken = generateAccessToken({id})
     return res.send(success(201,{accessToken}))
   } catch (e) {
@@ -66,7 +78,7 @@ const refreshAccessTokenController=async(req,res)=>{
 
 const generateAccessToken = (data)=>{
   try {
-    const token = jwt.sign(data,process.env.ACCESS_TOKEN_KEY,{expiresIn:'15s'})
+    const token = jwt.sign(data,process.env.ACCESS_TOKEN_KEY,{expiresIn:'1d'})
     console.log("Access Token>>>",token);
     return token
   } catch (error) {
@@ -87,7 +99,8 @@ const generateRefreshToken = (data)=>{
 module.exports = {
   signupController,
   loginController,
-  refreshAccessTokenController
+  refreshAccessTokenController,
+  logoutController
 };
 
 

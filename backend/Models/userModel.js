@@ -9,10 +9,14 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
         required:true,
+        select:false,
     },
     name:{
         type:String,
         required:true,
+    },
+    bio:{
+        type:String,
     },
     avatar:{
         publicId:String,
@@ -38,6 +42,6 @@ const userSchema = new mongoose.Schema({
     ]
 },{timestamps:true})
 
-const UserModel = new mongoose.model("user",userSchema);
+const UserModel = mongoose.model("user",userSchema);
 
 module.exports = UserModel
